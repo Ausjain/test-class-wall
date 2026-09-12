@@ -50,9 +50,15 @@ async function loadMemos() {
   }
 }
 
-// 메모를 새로 씁니다.
+// 메모를 새로 씁니다. (5자 이상 50자 이하일 때만 저장)
 // 백엔드 2: 여기에 "누가 썼는지"(uid)를 함께 저장하게 됩니다.
 async function addMemo(text) {
+  // 글자 수 검증: 5글자 이상 50글자 이하
+  if (text.length < 5 || text.length > 50) {
+    alert("메모는 5글자 이상 50글자 이하로 입력해 주세요. (현재 " + text.length + "자)");
+    return;
+  }
+
   try {
     await addDoc(collection(db, "memos"), {
       text: text,
@@ -124,6 +130,11 @@ input.onkeydown = async function (e) {
 
     const text = input.value.trim();
     if (text === "") return;
+
+    if (text.length < 5 || text.length > 50) {
+      alert("메모는 5글자 이상 50글자 이하로 입력해 주세요. (현재 " + text.length + "자)");
+      return;
+    }
 
     await addMemo(text);
     input.value = "";
