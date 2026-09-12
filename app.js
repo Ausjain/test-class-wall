@@ -9,6 +9,13 @@ import {
   orderBy,
   query
 } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+import {
+  getAuth,
+  signInWithPopup,
+  GoogleAuthProvider,
+  signOut,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
 // Firebase 설정
 const firebaseConfig = {
@@ -20,9 +27,75 @@ const firebaseConfig = {
   appId: "1:1098937315737:web:6a5b145addf98865b8e308"
 };
 
-// Firebase 및 Firestore 초기화
+// Firebase, Firestore 및 Auth 초기화
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
+
+// 현재 로그인한 사용자 정보를 담을 변수
+let currentUser = null;
+
+
+// ===================================================
+// 로그인 / 로그아웃 관련 기능
+// ===================================================
+
+// 구글 로그인 팝업 띄우기
+async function loginWithGoogle() {
+  try {
+    await signInWithPopup(auth, provider);
+  } catch (error) {
+    console.error("구글 로그인 실패:", error);
+    alert("로그인에 실패했습니다: " + error.message);
+  }
+}
+
+// 로그아웃하기
+async function logout() {
+  try {
+    await signOut(auth);
+  } catch (error) {
+    console.error("로그아웃 실패:", error);
+    alert("로그아웃에 실패했습니다.");
+  }
+}
+
+// 상단 사용자 영역(userArea) 화면 그리기
+function renderUserArea() {
+  const userArea = document.getElementById("userArea");
+  if (!userArea) return;
+
+  userArea.innerHTML = "";
+
+  if (currentUser) {
+    // 로그인된 상태: 인사말과 로그아웃 버튼 표시
+    const greeting = document.createElement("span");
+    greeting.textContent = `${currentUser.displayName || "선생님"}님 환영합니다!`;
+    userArea.appendChild(greeting);
+
+    const logoutBtn = document.createElement("button");
+    logoutBtn.textContent = "로그아웃";
+    logoutBtn.onclick = logout;
+    userArea.appendChild(logoutBtn);
+  } else {
+    // 미로그인 상태: 안내 문구와 Google 로그인 버튼 표시
+    const notice = document.createElement("span");
+    notice.textContent = "메모를 쓰려면 로그인이 필요합니다.";
+    userArea.appendChild(notice);
+
+    const loginBtn = document.createElement("button");
+    loginBtn.textContent = "Google 로그인";
+    loginBtn.onclick = loginWithGoogle;
+    userArea.appendChild(loginBtn);
+  }
+}
+
+// 로그인 상태 변경 감지 리스너 (로그인/로그아웃 시 자동 실행)
+onAuthStateChanged(auth, function (user) {
+  currentUser = user;
+  renderUserArea();
+});
 
 
 // ===================================================
@@ -144,5 +217,6 @@ input.onkeydown = async function (e) {
 
 
 // 첫 화면 그리기
+renderUserArea();
 render();
 input.focus();
