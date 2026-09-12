@@ -191,6 +191,57 @@ function makeMemo(memo) {
 
 
 // ===================================================
+// 담벼락 게시물에 대한 AI 코멘트 받기
+// 게시물 내용만 보내며 로그인 정보는 보내지 않습니다.
+// ===================================================
+
+const aiCommentButton = document.getElementById("aiCommentButton");
+const aiComment = document.getElementById("aiComment");
+
+aiCommentButton.onclick = async function () {
+  aiCommentButton.disabled = true;
+  aiCommentButton.textContent = "AI가 살펴보는 중...";
+  aiComment.style.display = "block";
+  aiComment.textContent = "담벼락 게시물을 읽고 있습니다.";
+
+  try {
+    const list = await loadMemos();
+    const memos = list
+      .map(function (memo) {
+        return memo.text;
+      })
+      .filter(function (text) {
+        return typeof text === "string" && text.trim() !== "";
+      });
+
+    if (memos.length === 0) {
+      aiComment.textContent = "코멘트할 게시물이 없습니다.";
+      return;
+    }
+
+    const response = await fetch("/api/gemini", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ memos: memos })
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "AI 코멘트를 불러오지 못했습니다.");
+    }
+
+    aiComment.textContent = data.comment;
+  } catch (error) {
+    console.error("AI 코멘트 요청 실패:", error);
+    aiComment.textContent = error.message || "AI 코멘트를 불러오지 못했습니다.";
+  } finally {
+    aiCommentButton.disabled = false;
+    aiCommentButton.textContent = "AI 코멘트 받기";
+  }
+};
+
+
+// ===================================================
 // 메모 쓰는 칸
 // 엔터를 누르면 담벼락에 붙습니다 (줄바꿈은 Shift + 엔터)
 // ===================================================

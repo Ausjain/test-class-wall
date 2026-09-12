@@ -21,6 +21,10 @@
     #wall { display: flex; flex-wrap: wrap; gap: 10px; }
     .memo { border: 1px solid #ddd; background: #fffde7; padding: 10px; width: 200px; font-size: 15px; }
     .memo button { float: right; }
+
+    /* AI가 만든 교사용 코멘트 */
+    #aiArea { margin: 18px 0; }
+    #aiComment { display: none; max-width: 700px; margin-top: 10px; padding: 12px; background: #eef7ff; border: 1px solid #b8d8f0; white-space: pre-wrap; }
   </style>
 </head>
 <body>
@@ -34,6 +38,11 @@
 
   <div id="writer">
     <textarea id="input" rows="3" maxlength="50" placeholder="메모를 쓰고 엔터 (5~50자)"></textarea>
+  </div>
+
+  <div id="aiArea">
+    <button id="aiCommentButton" type="button">AI 코멘트 받기</button>
+    <div id="aiComment" aria-live="polite"></div>
   </div>
 
   <!-- 메모는 app.js가 그립니다 -->
